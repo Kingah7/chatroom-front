@@ -1,0 +1,114 @@
+<template>
+  <div>
+    <el-card>
+      <el-form class="loginForm">
+        <h2>聊天室</h2>
+        <el-form-item label="用户名：">
+          <el-input
+            v-model="formData.name"
+            placeholder="请输入用户名"
+            autofocus
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="密 码：">
+          <el-input
+            v-model="formData.pwd"
+            placeholder="请输入密码"
+            type="password"
+            ref="pwd"
+          ></el-input>
+        </el-form-item>
+
+        <el-button type="primary" style="margin-top: 15px" @click="login"
+          >登 录</el-button
+        >
+      </el-form>
+    </el-card>
+  </div>
+</template>
+
+<script>
+import { reqLogin } from "@/api";
+export default {
+  name: "LoginPage",
+  data() {
+    return {
+      formData: {
+        name: "",
+        pwd: "",
+      },
+    };
+  },
+  methods: {
+    login() {
+      if (this.formData.name == "") {
+        this.$message.warning("用户名不能为空");
+      } else if (this.formData.pwd == "") {
+        this.$message.warning("请输入密码");
+      } else {
+        // 发送登录请求
+        reqLogin(this.formData)
+          .then((resp) => {
+            if (resp.code == 200) {
+              this.$store.commit("SETUSERNAME", resp.data);
+              this.$router.push("/chat");
+            } else {
+              this.$message.error(`${resp.msg}`);
+              if (`${resp.code}` == "401") {
+                this.formData.name = this.formData.pwd = "";
+                                this.formData.pwd = "";
+                this.$nextTick(() => {
+                  this.$refs.pwd.focus();
+                });
+              } else if (`${resp.code}` == "402") {
+                this.formData.pwd = "";
+                this.$nextTick(() => {
+                  this.$refs.pwd.focus();
+                });
+              }
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+    },
+  },
+};
+</script>
+
+<style lang="scss" scoped>
+div {
+  margin: auto;
+  padding: 0;
+  overflow: hidden !important;
+  background-color: white;
+  background-image: url("https://pic4.zhimg.com/v2-b10aa278478f11c60975d00c93a1ffff_r.jpg");
+  height: 100vh;
+
+  display: flex;
+  align-items: center;
+
+  .el-card {
+    width: 550px;
+    height: 300px;
+
+    .loginForm {
+      width: 500px;
+      height: 250px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      .el-form-item {
+        height: 50px;
+        margin: 10px;
+        .el-input {
+          height: auto;
+          background-color: transparent !important;
+        }
+      }
+    }
+  }
+}
+</style>
